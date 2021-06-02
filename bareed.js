@@ -42,12 +42,15 @@ class Point {
  * let wallet = new Wallet(money);
  **********************************************************/
 class Wallet {
-  // implement Wallet!
-  constructor(money = 0) {}
-
-  credit = amount => {};
-
-  debit = amount => {};
+  constructor(money = 0) {
+    this.money = money;
+  }
+  credit = (amount) => {
+    this.money += amount;
+  };
+  debit = (amount) => {
+    this.money -= amount;
+  };
 }
 
 /**********************************************************
@@ -62,7 +65,14 @@ class Wallet {
  * let person = new Person(name, x, y);
  **********************************************************/
 class Person {
-  // implement Person!
+  constructor(name, x, y) {
+    this.name = name;
+    this.location = new Point(x, y);
+    this.wallet = new Wallet();
+  }
+
+  moveTo = (point) => (this.location = point);
+
 }
 
 /**********************************************************
@@ -80,8 +90,18 @@ class Person {
  *
  * new vendor = new Vendor(name, x, y);
  **********************************************************/
-class Vendor {
-  // implement Vendor!
+class Vendor extends Person {
+  constructor(name, x, y) {
+    super(name, x, y);
+    this.range = 5;
+    this.price = 1;
+  }
+  sellTo = (customer, numberOfIceCreams) => {
+    const totalPrice = this.price * numberOfIceCreams
+    this.moveTo(customer.location); 
+    customer.wallet.debit(totalPrice);  
+    this.wallet.credit(totalPrice); 
+  };
 }
 
 /**********************************************************
@@ -100,8 +120,30 @@ class Vendor {
  *
  * new customer = new Customer(name, x, y);
  **********************************************************/
-class Customer {
-  // implement Customer!
+class Customer extends Person {
+  constructor(name, x, y) {
+    super(name, x, y)
+    this.wallet = new Wallet(10);
+  }
+
+  _isInRange = vendor => {
+    const distance = this.location.distanceTo(vendor.location);
+    const range = vendor.range;
+    return distance <= range; 
+  };
+
+  _haveEnoughMoney = (vendor, numberOfIceCreams) => {
+    const totalPrice = vendor.price * numberOfIceCreams;
+    return this.wallet.money >= totalPrice;
+  };
+
+  requestIceCream = (vendor, numberOfIceCreams) => {
+    if (this._isInRange(vendor) && 
+    this._haveEnoughMoney(vendor, numberOfIceCreams)
+    ) {
+      vendor.sellTo(this, numberOfIceCreams);
+    }
+  };  
 }
 
 export { Point, Wallet, Person, Customer, Vendor };
